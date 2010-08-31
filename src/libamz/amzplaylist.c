@@ -1,6 +1,6 @@
 /*
  * libamz: library for accessing, manipulating and decrypting amz files.
- * libamz.h: API declarations.
+ * amzplaylist.c: Parsing of XSPF playlists.
  *
  * Copyright (c) 2010 William Pitcock <nenolod@dereferenced.org>.
  *
@@ -24,27 +24,20 @@
 #include <glib.h>
 #include <gcrypt.h>
 
-#include <stddef.h>
-#include <stdbool.h>
+#include "libamz.h"
 
-#ifndef __LIBAMZ_H__
-#define __LIBAMZ_H__
+#include <libxml/tree.h>
+#include <libxml/parser.h>
+#include <libxml/xmlreader.h>
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
+#include <libxml/uri.h>
 
-/* amzfile */
-extern bool amzfile_decrypt_blob(gchar *indata, gsize inlen, guchar **outdata, gsize *outlen);
-extern bool amzfile_decrypt_file(const gchar *file, guchar **outdata, gsize *outlen);
+#define XSPF_ROOT_NODE_NAME "playlist"
+#define XSPF_XMLNS "http://xspf.org/ns/0/"
 
-/* amzplaylist */
-typedef struct {
-	gchar *location;
-	gchar *title;
-	gchar *creator;
-	gchar *album;
-	gint tracknum;
-	gint64 duration;
-	GHashTable *meta;
-} AMZPlaylistEntry;
+GList *
+amzplaylist_parse(const guchar *indata)
+{
 
-extern GList *amzplaylist_parse(const guchar *indata);
-
-#endif
+}

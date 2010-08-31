@@ -59,5 +59,7 @@ main(gint argc, const gchar *argv[])
 		i++;
 	}
 
+	amzplaylist_free(list);
+
 	return EXIT_SUCCESS;
 }

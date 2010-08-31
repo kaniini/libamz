@@ -132,6 +132,8 @@ build_window(void)
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), "gtkamzdl");
+	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
+	gtk_window_set_deletable(GTK_WINDOW(window), FALSE);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 10);
 
 	vbox = gtk_vbox_new(FALSE, 5);
@@ -148,6 +150,8 @@ build_window(void)
 
 	songprogress = gtk_progress_bar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), songprogress, TRUE, TRUE, 0);
+
+	g_signal_connect(window, "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
 	gtk_widget_show_all(window);
 }

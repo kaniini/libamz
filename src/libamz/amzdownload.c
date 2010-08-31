@@ -32,27 +32,51 @@ amzdownload_session_new(void)
 	return soup_session_async_new();
 }
 
-bool
-amzdownload_session_download_url(SoupSession *session, const gchar *url, const gchar *path)
+static void
+amzdownload_session_got_headers(SoupMessage *msg, AMZDownloadContext *ctx)
 {
-	SoupMessage *msg;
+	ctx->length = soup_message_headers_get_content_length(msg->response_headers);
+}
+
+static void
+amzdownload_session_got_chunk(SoupMessage *msg, SoupBuffer *chunk, AMZDownloadContext *ctx)
+{
+	ctx->bytes = msg->response_body->length;
+	ctx->progress = ((float) ctx->bytes / (float) ctx->length) * 100.;
+
+	if (ctx->progress_notify != NULL)
+		ctx->progress_notify(msg, ctx);
+}
+
+bool
+amzdownload_session_download_url(SoupSession *session, const gchar *url, const gchar *path,
+				 void (*progress_notify)(SoupMessage *msg, AMZDownloadContext *ctx))
+{
+	AMZDownloadContext ctx;
 	GError *error = NULL;
 
-	msg = soup_message_new(SOUP_METHOD_GET, url);
-	soup_session_send_message(session, msg);
+	ctx.msg = soup_message_new(SOUP_METHOD_GET, url);
+	ctx.progress_notify = progress_notify;
 
-	if (!SOUP_STATUS_IS_SUCCESSFUL(msg->status_code))
+	g_signal_connect(ctx.msg, "got-headers", G_CALLBACK(amzdownload_session_got_headers), &ctx);
+	g_signal_connect(ctx.msg, "got-chunk", G_CALLBACK(amzdownload_session_got_chunk), &ctx);
+
+	soup_session_send_message(session, ctx.msg);
+
+	if (!SOUP_STATUS_IS_SUCCESSFUL(ctx.msg->status_code))
 	{
-		g_warning("%s: %d %s\n", url, msg->status_code, msg->reason_phrase);
+		g_warning("%s: %d %s\n", url, ctx.msg->status_code, ctx.msg->reason_phrase);
 		return false;
 	}
 
-	g_file_set_contents(path, msg->response_body->data, msg->response_body->length, &error);
+	g_file_set_contents(path, ctx.msg->response_body->data, ctx.msg->response_body->length, &error);
 	if (error != NULL)
 	{
 		g_warning("%s: %s", url, error->message);
 		return false;
 	}
+
+	g_object_unref(ctx.msg);
 
 	return true;
 }

@@ -51,7 +51,19 @@ extern GList *amzplaylist_parse(const guchar *indata);
 extern void amzplaylist_free(GList *playlist);
 
 /* amzdownload */
+typedef struct _AMZDownloadContext AMZDownloadContext;
+
+struct _AMZDownloadContext {
+	SoupMessage *msg;
+	gint length;
+	gint bytes;
+	gfloat progress;
+
+	void (*progress_notify)(SoupMessage *msg, AMZDownloadContext *ctx);
+};
+
 SoupSession *amzdownload_session_new(void);
-bool amzdownload_session_download_url(SoupSession *session, const gchar *url, const gchar *path);
+bool amzdownload_session_download_url(SoupSession *session, const gchar *url, const gchar *path,
+	void (*progress_notify)(SoupMessage *msg, AMZDownloadContext *context));
 
 #endif

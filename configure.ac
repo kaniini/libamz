@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([amztools], [0.0.1], [nenolod@nenolod.net])
+AC_INIT([libamz], [0.0.1], [nenolod@nenolod.net])
 AC_CONFIG_SRCDIR([src/libamz/amzfile.c])
 AC_CONFIG_HEADER([src/libamz/amzconfig.h])
 

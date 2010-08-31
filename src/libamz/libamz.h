@@ -46,5 +46,6 @@ typedef struct {
 } AMZPlaylistEntry;
 
 extern GList *amzplaylist_parse(const guchar *indata);
+extern void amzplaylist_free(GList *playlist);
 
 #endif

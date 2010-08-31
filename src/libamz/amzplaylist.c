@@ -36,8 +36,99 @@
 #define XSPF_ROOT_NODE_NAME "playlist"
 #define XSPF_XMLNS "http://xspf.org/ns/0/"
 
+static AMZPlaylistEntry *
+amzplaylist_parse_track(xmlNodePtr track, xmlChar *base)
+{
+	xmlNodePtr nptr;
+	AMZPlaylistEntry *entry;
+
+	entry = g_slice_new0(AMZPlaylistEntry);
+
+	for (nptr = track->children; nptr != NULL; nptr = nptr->next)
+	{
+		if (nptr->type == XML_ELEMENT_NODE)
+		{
+			if (!xmlStrcmp(nptr->name, (xmlChar *)"location"))
+				entry->location = g_strdup((gchar *) xmlNodeGetContent(nptr));
+			else if (!xmlStrcmp(nptr->name, (xmlChar *)"creator"))
+				entry->creator = g_strdup((gchar *) xmlNodeGetContent(nptr));
+			else if (!xmlStrcmp(nptr->name, (xmlChar *)"album"))
+				entry->album = g_strdup((gchar *) xmlNodeGetContent(nptr));
+			else if (!xmlStrcmp(nptr->name, (xmlChar *)"title"))
+				entry->title = g_strdup((gchar *) xmlNodeGetContent(nptr));
+			else if (!xmlStrcmp(nptr->name, (xmlChar *)"trackNum"))
+				entry->tracknum = atol((gchar *) xmlNodeGetContent(nptr));
+			else if (!xmlStrcmp(nptr->name, (xmlChar *)"duration"))
+				entry->duration = atol((gchar *) xmlNodeGetContent(nptr));
+		}
+	}
+
+	return entry;	
+}
+
+static GList *
+amzplaylist_parse_tracklist(GList *list, xmlNodePtr tracklist, xmlChar *base)
+{
+	xmlNodePtr nptr;
+	AMZPlaylistEntry *entry;
+
+	for (nptr = tracklist->children; nptr != NULL; nptr = nptr->next)
+	{
+		if (nptr->type == XML_ELEMENT_NODE && !xmlStrcmp (nptr->name, (xmlChar *) "track"))
+		{
+			entry = amzplaylist_parse_track(nptr, base);
+			list = g_list_prepend(list, entry);
+		}
+	}
+
+	return g_list_reverse(list);
+}
+
 GList *
 amzplaylist_parse(const guchar *indata)
 {
+	xmlDocPtr doc;
+	xmlNodePtr nptr, nptr2;
+	GList *ret = NULL;
 
+	doc = xmlRecoverDoc(indata);
+	if (doc == NULL)
+        	return NULL;
+
+	for (nptr = doc->children; nptr != NULL; nptr = nptr->next)
+	{
+		if (nptr->type == XML_ELEMENT_NODE && !xmlStrcmp(nptr->name, (xmlChar *) "playlist"))
+		{
+			xmlChar *base;
+
+			base = xmlNodeGetBase(doc, nptr);
+			for (nptr2 = nptr->children; nptr2 != NULL; nptr2 = nptr2->next)
+			{
+				if (nptr->type == XML_ELEMENT_NODE && !xmlStrcmp(nptr->name, (xmlChar *) "trackList"))
+					ret = amzplaylist_parse_tracklist(ret, nptr2, base);
+			}
+		}
+	}
+
+	return ret;
+}
+
+static void
+amzplaylist_free_entry(AMZPlaylistEntry *entry, gpointer userdata)
+{
+	g_free(entry->location);
+	g_free(entry->creator);
+	g_free(entry->album);
+	g_free(entry->title);
+
+	g_slice_free(AMZPlaylistEntry, entry);
+}
+
+void
+amzplaylist_free(GList *playlist)
+{
+	g_return_if_fail(playlist != NULL);
+
+	g_list_foreach(playlist, (GFunc) amzplaylist_free_entry, NULL);
+	g_list_free(playlist);
 }

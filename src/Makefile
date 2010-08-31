@@ -1,3 +1,3 @@
 include ../buildsys.mk
 
-SUBDIRS = libamz amzdecrypt amzdl amzls
+SUBDIRS = libamz amzdecrypt amzdl amzls gtkamzdl

@@ -40,30 +40,17 @@ build_download_path(AMZPlaylistEntry *entry)
 	return ret;
 }
 
-int
-main(gint argc, const gchar *argv[])
+void
+handle_amz_file(const gchar *file)
 {
-	GList *list, *node;
-	GMainLoop *loop;
-	SoupSession *session;
+	g_return_if_fail(file != NULL);
 
-	guchar *data;
-	gsize len;
-
-	g_type_init();
-
-	if (!argv[1])
-	{
-		fprintf(stderr, "usage: %s file.amz\n", argv[0]);
-		return EXIT_FAILURE;
-	}
-
-	amzfile_decrypt_file(argv[1], &data, &len);
+	amzfile_decrypt_file(file, &data, &len);
 	list = amzplaylist_parse(data);
 	if (list == NULL)
 	{
-		fprintf(stderr, "failed to parse xspf file embedded in %s\n", argv[1]);
-		return EXIT_FAILURE;
+		fprintf(stderr, "failed to parse xspf file embedded in %s\n", file);
+		exit(EXIT_FAILURE);
 	}
 
 	{
@@ -71,9 +58,6 @@ main(gint argc, const gchar *argv[])
 
 		g_print("Downloading album %s by %s.\n\n", entry->album, entry->creator);
 	}
-
-	session = amzdownload_session_new();
-	loop = g_main_loop_new(NULL, TRUE);
 
 	for (node = list; node != NULL; node = node->next)
 	{
@@ -85,6 +69,32 @@ main(gint argc, const gchar *argv[])
 		g_print("Downloading %s as %s.\n", entry->title, path);
 		amzdownload_session_download_url(session, entry->location, path);
 	}
+}
+
+int
+main(gint argc, const gchar *argv[])
+{
+	GList *list, *node;
+	GMainLoop *loop;
+	SoupSession *session;
+	gint i;
+
+	guchar *data;
+	gsize len;
+
+	g_type_init();
+
+	session = amzdownload_session_new();
+	loop = g_main_loop_new(NULL, TRUE);
+
+	if (argc < 2)
+	{
+		fprintf(stderr, "usage: %s file.amz\n", argv[0]);
+		return EXIT_FAILURE;
+	}
+
+	for (i = 1; i < argc; i++)
+		handle_amz_file(argv[i]);
 
 	g_main_loop_unref(loop);
 	g_object_unref(session);

@@ -24,6 +24,13 @@
 
 #include "libamz.h"
 
+static void
+handle_progress(SoupMessage *msg, AMZDownloadContext *ctx)
+{
+	g_print("Got %d bytes of %d bytes, %.2f percent complete.\r",
+		ctx->bytes, ctx->length, ctx->progress);
+}
+
 gchar *
 build_download_path(AMZPlaylistEntry *entry)
 {
@@ -60,7 +67,7 @@ handle_amz_file(SoupSession *session, const gchar *file)
 	{
 		AMZPlaylistEntry *entry = list->data;
 
-		g_print("Downloading album %s by %s.\n\n", entry->album, entry->creator);
+		g_print("Downloading album %s by %s.\n", entry->album, entry->creator);
 	}
 
 	for (node = list; node != NULL; node = node->next)
@@ -70,9 +77,11 @@ handle_amz_file(SoupSession *session, const gchar *file)
 
 		path = build_download_path(entry);
 
-		g_print("Downloading %s as %s.\n", entry->title, path);
-		amzdownload_session_download_url(session, entry->location, path);
+		g_print("\nDownloading %s as %s.\n", entry->title, path);
+		amzdownload_session_download_url(session, entry->location, path, handle_progress);
 	}
+
+	g_print("\nAll tracks have been downloaded for this album.\n");
 }
 
 int

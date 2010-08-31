@@ -27,10 +27,15 @@
 gchar *
 build_download_path(AMZPlaylistEntry *entry)
 {
-	gchar *ret, *filename;
+	gchar *ret, *dir, *filename;
 
 	filename = g_strdup_printf("%02d - %s.mp3", entry->tracknum, entry->title);
-	ret = g_build_filename(g_get_home_dir(), "Music", entry->creator, entry->album, filename, NULL);
+	dir = g_build_filename(g_get_home_dir(), "Music", entry->creator, entry->album, NULL);
+	ret = g_build_filename(dir, filename, NULL);
+
+	g_mkdir_with_parents(dir, 0755);
+
+	g_free(dir);
 
 	return ret;
 }

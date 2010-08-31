@@ -1,5 +1,5 @@
-PROG = amzdecrypt${PROG_SUFFIX}
-SRCS = amzdecrypt.c
+PROG = amzdl${PROG_SUFFIX}
+SRCS = amzdl.c
 
 include ../../buildsys.mk
 include ../../extra.mk

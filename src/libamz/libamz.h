@@ -24,6 +24,8 @@
 #include <glib.h>
 #include <gcrypt.h>
 
+#include <libsoup/soup.h>
+
 #include <stddef.h>
 #include <stdbool.h>
 
@@ -47,5 +49,9 @@ typedef struct {
 
 extern GList *amzplaylist_parse(const guchar *indata);
 extern void amzplaylist_free(GList *playlist);
+
+/* amzdownload */
+SoupSession *amzdownload_session_new(void);
+bool amzdownload_session_download_url(SoupSession *session, const gchar *url, const gchar *path);
 
 #endif

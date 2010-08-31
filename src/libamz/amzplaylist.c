@@ -93,7 +93,10 @@ amzplaylist_parse(const guchar *indata)
 
 	doc = xmlRecoverDoc(indata);
 	if (doc == NULL)
+	{
+		fprintf(stderr, "xmlRecoverDoc is NULL\n");
         	return NULL;
+	}
 
 	for (nptr = doc->children; nptr != NULL; nptr = nptr->next)
 	{
@@ -104,7 +107,7 @@ amzplaylist_parse(const guchar *indata)
 			base = xmlNodeGetBase(doc, nptr);
 			for (nptr2 = nptr->children; nptr2 != NULL; nptr2 = nptr2->next)
 			{
-				if (nptr->type == XML_ELEMENT_NODE && !xmlStrcmp(nptr->name, (xmlChar *) "trackList"))
+				if (nptr2->type == XML_ELEMENT_NODE && !xmlStrcmp(nptr2->name, (xmlChar *) "trackList"))
 					ret = amzplaylist_parse_tracklist(ret, nptr2, base);
 			}
 		}

@@ -41,8 +41,12 @@ build_download_path(AMZPlaylistEntry *entry)
 }
 
 void
-handle_amz_file(const gchar *file)
+handle_amz_file(SoupSession *session, const gchar *file)
 {
+	GList *list, *node;
+	guchar *data;
+	gsize len;
+
 	g_return_if_fail(file != NULL);
 
 	amzfile_decrypt_file(file, &data, &len);
@@ -74,13 +78,9 @@ handle_amz_file(const gchar *file)
 int
 main(gint argc, const gchar *argv[])
 {
-	GList *list, *node;
 	GMainLoop *loop;
 	SoupSession *session;
 	gint i;
-
-	guchar *data;
-	gsize len;
 
 	g_type_init();
 
@@ -94,7 +94,7 @@ main(gint argc, const gchar *argv[])
 	}
 
 	for (i = 1; i < argc; i++)
-		handle_amz_file(argv[i]);
+		handle_amz_file(session, argv[i]);
 
 	g_main_loop_unref(loop);
 	g_object_unref(session);

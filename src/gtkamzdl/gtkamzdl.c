@@ -83,7 +83,7 @@ handle_amz_file(SoupSession *session, const gchar *file)
 
 		albumtext = g_markup_escape_text(entry->album, -1);
 		creator = g_markup_escape_text(entry->creator, -1);
-		markup = g_strdup_printf("<big>Downloading <b>%s</b> by <b>%s</b>.</big>", albumtext, creator);
+		markup = g_strdup_printf("<big>Downloading <b>%s</b> by <b>%s</b></big>", albumtext, creator);
 		gtk_label_set_markup(GTK_LABEL(album), markup);
 
 		g_free(albumtext);

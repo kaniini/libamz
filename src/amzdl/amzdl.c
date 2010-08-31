@@ -30,7 +30,7 @@ build_download_path(AMZPlaylistEntry *entry)
 	gchar *ret, *filename;
 
 	filename = g_strdup_printf("%02d - %s.mp3", entry->tracknum, entry->title);
-	ret = g_build_filename(g_get_home_dir(), "Music", entry->creator, filename, NULL);
+	ret = g_build_filename(g_get_home_dir(), "Music", entry->creator, entry->album, filename, NULL);
 
 	return ret;
 }

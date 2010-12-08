@@ -53,8 +53,11 @@ main(gint argc, const gchar *argv[])
 	for (node = list; node != NULL; node = node->next)
 	{
 		AMZPlaylistEntry *entry = node->data;
+		gchar *extension;
 
-		g_print("%5d. %s - %s\n", i, entry->creator, entry->title);
+		extension = entry->meta ? g_hash_table_lookup(entry->meta, "http://www.amazon.com/dmusic/trackType") : "mp3";
+
+		g_print("%5d. %s - %s [%s]\n", i, entry->creator, entry->title, extension);
 		g_print("       %s\n", entry->location);
 		i++;
 	}

@@ -60,6 +60,16 @@ amzplaylist_parse_track(xmlNodePtr track, xmlChar *base)
 				entry->tracknum = atol((gchar *) xmlNodeGetContent(nptr));
 			else if (!xmlStrcmp(nptr->name, (xmlChar *)"duration"))
 				entry->duration = atol((gchar *) xmlNodeGetContent(nptr));
+			else if (!xmlStrcmp(nptr->name, (xmlChar *)"meta"))
+			{
+				xmlChar *property;
+
+				if (entry->meta == NULL)
+					entry->meta = g_hash_table_new(g_str_hash, g_str_equal);
+
+				property = xmlGetProp(nptr, (xmlChar *) "rel");
+				g_hash_table_insert(entry->meta, property, g_strdup((gchar *) xmlNodeGetContent(nptr)));
+			}
 		}
 	}
 
@@ -107,8 +117,34 @@ amzplaylist_parse(const guchar *indata)
 			base = xmlNodeGetBase(doc, nptr);
 			for (nptr2 = nptr->children; nptr2 != NULL; nptr2 = nptr2->next)
 			{
-				if (nptr2->type == XML_ELEMENT_NODE && !xmlStrcmp(nptr2->name, (xmlChar *) "trackList"))
+				if (nptr2->type != XML_ELEMENT_NODE)
+					continue;
+
+				if (!xmlStrcmp(nptr2->name, (xmlChar *) "trackList"))
 					ret = amzplaylist_parse_tracklist(ret, nptr2, base);
+				else if (!xmlStrcmp(nptr2->name, (xmlChar *) "extension"))
+				{
+					xmlNodePtr nptr3;
+
+					for (nptr3 = nptr2->children; nptr3 != NULL; nptr3 = nptr3->next)
+					{
+						if (nptr3->type != XML_ELEMENT_NODE)
+							continue;
+
+						if (!xmlStrcmp(nptr3->name, (xmlChar *) "deluxe"))
+						{
+							xmlChar *child;
+							xmlNodePtr nptr4;
+
+							child = xmlNodeGetBase(doc, nptr3);
+							for (nptr4 = nptr3->children; nptr4 != NULL; nptr4 = nptr4->next)
+							{
+								if (nptr4->type == XML_ELEMENT_NODE && !xmlStrcmp(nptr4->name, (xmlChar *) "trackList"))
+									ret = amzplaylist_parse_tracklist(ret, nptr4, child);
+							}
+						}
+					}
+				}
 			}
 		}
 	}

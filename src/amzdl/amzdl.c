@@ -34,9 +34,10 @@ handle_progress(SoupMessage *msg, AMZDownloadContext *ctx)
 gchar *
 build_download_path(AMZPlaylistEntry *entry)
 {
-	gchar *ret, *dir, *filename;
+	gchar *ret, *dir, *filename, *extension;
 
-	filename = g_strdup_printf("%02d - %s.mp3", entry->tracknum, entry->title);
+	extension = entry->meta ? g_hash_table_lookup(entry->meta, "http://www.amazon.com/dmusic/trackType") : "mp3";
+	filename = g_strdup_printf("%02d - %s.%s", entry->tracknum, entry->title, extension);
 	dir = g_build_filename(g_get_home_dir(), "Music", entry->creator, entry->album, NULL);
 	ret = g_build_filename(dir, filename, NULL);
 
